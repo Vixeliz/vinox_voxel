@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy_math::UVec3;
 use bitvec::prelude::*;
 
@@ -13,135 +15,43 @@ pub const TOTAL_CHUNK_SIZE: usize = (CHUNK_SIZE) * (CHUNK_SIZE) * (CHUNK_SIZE);
 
 type ChunkShape = ConstShape3usize<CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE>;
 
-pub trait Voxel {
-    /// Implement this to tell if a voxel is empty
-    fn is_empty(&self) -> bool;
-    /// Impelement this for true emptiness. For example you may want light to propogate through blocks that are partially empty so thats what is_empty returns true_empty should be blocks that don't have custom geometry and are not opaque.
-    fn is_true_empty(&self) -> bool;
-    /// Oposite of is_empty
-    fn is_opaque(&self) -> bool;
-    /// Identifier must be something that implements eq
-    fn identifier(&self) -> String;
-}
-
-#[derive(EnumString, Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone, Copy, Hash)]
-pub enum VoxelVisibility {
-    #[default]
-    Empty,
-    Opaque,
-    Transparent,
-}
-
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Clone)]
 pub struct Container {
     pub items: Vec<String>, // Hashmap would be better and may do more into implementing hashmyself at some point but this approach works for now
     pub max_size: u8,
 }
 
-// #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-// pub struct RenderedBlockData {
-//     pub geo_index: usize,
-//     pub match_index: usize,
-//     pub visibility: VoxelVisibility,
-//     pub textures: [usize; 6],
-//     pub tex_variance: [bool; 6],
-//     pub blocks: [bool; 6],
-//     pub light: u8,
-// }
-
-// impl Default for RenderedBlockData {
-//     fn default() -> Self {
-//         RenderedBlockData {
-//             visibility: VoxelVisibility::Empty,
-//             blocks: [false, false, false, false, false, false],
-//             tex_variance: [false, false, false, false, false, false],
-//             textures: [0, 0, 0, 0, 0, 0],
-//             geo_index: 0,
-//             match_index: 0,
-//             light: 0,
-//         }
-//     }
-// }
-
-// #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Clone)]
-// pub struct BlockData {
-//     pub identifier: String,
-//     pub last_tick: Option<u64>,
-//     pub arbitary_data: Option<(u8, Vec<u8>)>,
-// }
-
-// impl BlockData {
-//     pub fn is_empty(&self) -> bool {
-//         false
-// }
-// pub fn is_opaque(&self, block_table: &BlockTable) -> bool {
-//     block_table
-//         .get(&name_to_identifier(
-//             self.namespace.clone(),
-//             self.name.clone(),
-//         ))
-//         .unwrap()
-//         .visibility
-//         .unwrap_or_default()
-//         == VoxelVisibility::Opaque
-// }
-// pub fn is_true_empty(&self, block_table: &BlockTable) -> bool {
-//     let descriptor = block_table
-//         .get(&name_to_identifier(
-//             self.namespace.clone(),
-//             self.name.clone(),
-//         ))
-//         .unwrap();
-//     !(descriptor.visibility.unwrap_or_default() == VoxelVisibility::Opaque
-//         && descriptor
-//             .geometry
-//             .clone()
-//             .unwrap_or_default()
-//             .get_geo_namespace()
-//             == "vinox:block")
-// }
-// }
-
-// impl Default for BlockData {
-//     fn default() -> Self {
-//         BlockData {
-//             identifier: "vinox:air".to_string(),
-//             last_tick: None,
-//             arbitary_data: None,
-//         }
-//     }
-// }
-
-// impl BlockData {
-//     pub fn new(namespace: String, name: String) -> Self {
-//         BlockData {
-//             identifier: namespace + &name,
-//             ..Default::default()
-//         }
-//     }
-// }
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Storage<V: Voxel + Clone + Serialize + Eq + Default> {
-    Single(SingleStorage<V>),
-    Multi(MultiStorage<V>),
+pub enum Storage<
+    V: Voxel<R> + Clone + Serialize + Eq + Default,
+    R: VoxRegistry<V> + Clone + Default,
+> {
+    Single(SingleStorage<V, R>),
+    Multi(MultiStorage<V, R>),
 }
 
 /// Compressed storage for volumes with a single voxel type
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SingleStorage<V: Voxel + Clone + Serialize + Eq + Default> {
+pub struct SingleStorage<
+    V: Voxel<R> + Clone + Serialize + Eq + Default,
+    R: VoxRegistry<V> + Clone + Default,
+> {
     size: usize,
     voxel: V,
+    phantom: PhantomData<R>,
 }
 
 /// Palette compressed storage for volumes with multiple voxel types
 /// Based on https://voxel.wiki/wiki/palette-compression/
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct MultiStorage<V: Voxel + Clone + Serialize + Eq + Default> {
+pub struct MultiStorage<
+    V: Voxel<R> + Clone + Serialize + Eq + Default,
+    R: VoxRegistry<V> + Clone + Default,
+> {
     /// Size of chunk storage, in voxels
     size: usize,
     data: BitBuffer,
-    palette: Vec<PaletteEntry<V>>,
+    palette: Vec<PaletteEntry<V, R>>,
     /// Palette capacity given size of indices
     /// Not necessarily equal to palette vector capacity
     palette_capacity: usize,
@@ -149,7 +59,9 @@ pub struct MultiStorage<V: Voxel + Clone + Serialize + Eq + Default> {
     indices_length: usize,
 }
 
-impl<V: Voxel + Clone + Serialize + Eq + Default> MultiStorage<V> {
+impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default>
+    MultiStorage<V, R>
+{
     fn new(size: usize, initial_voxel: V) -> Self {
         // Indices_length of 2 since this is only used for multiple voxel types
         let indices_length = 2;
@@ -158,6 +70,7 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> MultiStorage<V> {
         palette.push(PaletteEntry {
             voxel_type: initial_voxel,
             ref_count: size,
+            phantom: PhantomData,
         });
 
         Self {
@@ -189,11 +102,14 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> MultiStorage<V> {
     }
 }
 
-impl<V: Voxel + Clone + Serialize + Eq + Default> Storage<V> {
+impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default>
+    Storage<V, R>
+{
     pub fn new(size: usize) -> Self {
         Self::Single(SingleStorage {
             size,
             voxel: V::default(),
+            phantom: PhantomData,
         })
     }
 
@@ -207,6 +123,7 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> Storage<V> {
                 Storage::Single(SingleStorage {
                     size: storage.size,
                     voxel: storage.palette[0].voxel_type.clone(),
+                    phantom: PhantomData,
                 })
             }
         };
@@ -286,6 +203,7 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> Storage<V> {
                     storage.palette.push(PaletteEntry {
                         voxel_type: voxel,
                         ref_count: 1,
+                        phantom: PhantomData,
                     });
 
                     storage.palette.len() - 1
@@ -330,9 +248,10 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> Storage<V> {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct PaletteEntry<V: Voxel + Clone + Serialize> {
+struct PaletteEntry<V: Voxel<R> + Clone + Serialize, R: VoxRegistry<V> + Clone + Default> {
     voxel_type: V,
     ref_count: usize,
+    phantom: PhantomData<R>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -363,18 +282,26 @@ impl BitBuffer {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct RawChunk<V: Voxel + Clone + Serialize + Eq + Default> {
-    voxels: Storage<V>,
+pub struct RawChunk<
+    V: Voxel<R> + Clone + Serialize + Eq + Default,
+    R: VoxRegistry<V> + Clone + Default,
+> {
+    voxels: Storage<V, R>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ChunkData<V: Voxel + Clone + Serialize + Eq + Default> {
-    voxels: Storage<V>,
+pub struct ChunkData<
+    V: Voxel<R> + Clone + Serialize + Eq + Default,
+    R: VoxRegistry<V> + Clone + Default,
+> {
+    voxels: Storage<V, R>,
     change_count: u16,
     dirty: bool,
 }
 
-impl<V: Voxel + Clone + Serialize + Eq + Default> Default for ChunkData<V> {
+impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default> Default
+    for ChunkData<V, R>
+{
     fn default() -> Self {
         Self {
             voxels: Storage::new(ChunkShape::USIZE),
@@ -385,7 +312,9 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> Default for ChunkData<V> {
 }
 
 #[allow(dead_code)]
-impl<V: Voxel + Clone + Serialize + Eq + Default> ChunkData<V> {
+impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default>
+    ChunkData<V, R>
+{
     pub fn get(&self, pos: RelativeVoxelPos) -> V {
         self.voxels.get(Self::linearize(pos))
     }
@@ -413,8 +342,11 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> ChunkData<V> {
         }
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.is_uniform() && self.get(RelativeVoxelPos(UVec3::new(0, 0, 0))).is_empty()
+    pub fn is_empty(&self, registry: Option<&R>) -> bool {
+        self.is_uniform()
+            && self
+                .get(RelativeVoxelPos(UVec3::new(0, 0, 0)))
+                .is_empty(registry)
     }
 
     pub fn is_dirty(&self) -> bool {
@@ -452,7 +384,7 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> ChunkData<V> {
         RelativeVoxelPos::new(res[0] as u32, res[1] as u32, res[2] as u32)
     }
 
-    pub fn from_raw(raw_chunk: RawChunk<V>) -> Self {
+    pub fn from_raw(raw_chunk: RawChunk<V, R>) -> Self {
         Self {
             voxels: raw_chunk.voxels,
             change_count: 0,
@@ -460,7 +392,7 @@ impl<V: Voxel + Clone + Serialize + Eq + Default> ChunkData<V> {
         }
     }
 
-    pub fn to_raw(&self) -> RawChunk<V> {
+    pub fn to_raw(&self) -> RawChunk<V, R> {
         RawChunk {
             voxels: self.voxels.clone(),
         }
