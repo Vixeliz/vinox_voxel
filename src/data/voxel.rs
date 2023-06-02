@@ -82,8 +82,8 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
     fn to_geo_idx(
         &self,
         geo_pal: Option<&mut crate::mesh::chunk::GeoPalette>,
-        geo_registry: Option<GeometryRegistry>,
-        vox_registry: Option<BlockRegistry>,
+        geo_registry: Option<&GeometryRegistry>,
+        vox_registry: Option<&BlockRegistry>,
     ) -> Option<usize> {
         if let Some(geo_registry) = geo_registry {
             if let Some(vox_registry) = vox_registry {
@@ -145,16 +145,16 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
 
     fn to_texture_uvs(
         &self,
-        _vox_regisstry: Option<BlockRegistry>,
-        _geo_registry: Option<GeometryRegistry>,
+        _vox_regisstry: Option<&BlockRegistry>,
+        _geo_registry: Option<&GeometryRegistry>,
     ) -> Option<[(f32, f32); 6]> {
         None
     }
 
     fn blocking_sides(
         &self,
-        vox_registry: Option<BlockRegistry>,
-        geo_registry: Option<GeometryRegistry>,
+        vox_registry: Option<&BlockRegistry>,
+        geo_registry: Option<&GeometryRegistry>,
     ) -> Option<[bool; 6]> {
         if let Some(geo_registry) = geo_registry {
             if let Some(vox_registry) = vox_registry {
@@ -175,6 +175,19 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
     }
 
     fn light_level() -> Option<u8> {
+        None
+    }
+
+    fn to_visibility(
+        &self,
+        vox_registry: Option<&BlockRegistry>,
+        _geo_registry: Option<&GeometryRegistry>,
+    ) -> Option<VoxelVisibility> {
+        if let Some(vox_registry) = vox_registry {
+            if let Some(block) = vox_registry.get(&self.identifier) {
+                return block.visibility;
+            }
+        }
         None
     }
 }

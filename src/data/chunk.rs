@@ -5,7 +5,6 @@ use bitvec::prelude::*;
 
 use ndshape::{ConstShape, ConstShape3usize};
 use serde::{Deserialize, Serialize};
-use strum::EnumString;
 
 use crate::prelude::*;
 

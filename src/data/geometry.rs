@@ -4,7 +4,7 @@ use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use strum::EnumString;
 
-use crate::prelude::*;
+// use crate::prelude::*;
 
 #[derive(Deref, DerefMut, Default)]
 pub struct GeometryRegistry(pub HashMap<String, Geometry>);
