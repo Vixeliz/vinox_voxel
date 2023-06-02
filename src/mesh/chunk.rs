@@ -29,20 +29,20 @@ pub trait RenderedVoxel<
         &self,
         geo_pal: Option<&mut GeoPalette>,
         geo_registry: Option<GeometryRegistry>,
-        vox_regisstry: Option<R>,
+        vox_registry: Option<R>,
     ) -> Option<usize>;
 
     fn to_match_idx(&self, match_pal: Option<&mut BlockMatches>) -> usize;
     /// These should return the uvs for the whole texture of this face this doesn't include the uvs for geometry faces
     fn to_texture_uvs(
         &self,
-        vox_regisstry: Option<R>,
+        vox_registry: Option<R>,
         geo_registry: Option<GeometryRegistry>,
     ) -> Option<[(f32, f32); 6]>;
     /// Returns if a side of this voxel will block that faces neighbor
     fn blocking_sides(
         &self,
-        vox_regisstry: Option<R>,
+        vox_registry: Option<R>,
         geo_registry: Option<GeometryRegistry>,
     ) -> Option<[bool; 6]>;
 

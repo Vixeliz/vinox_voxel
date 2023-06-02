@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::prelude::*;
+use crate::{mesh::chunk::RenderedVoxel, prelude::*};
 use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use strum::EnumString;
@@ -75,6 +75,108 @@ pub struct BlockData {
     pub identifier: String,
     pub last_tick: Option<u64>,
     pub properties: Option<Vec<(String, Property)>>,
+}
+
+#[cfg(feature = "block")]
+impl RenderedVoxel<Self, BlockRegistry> for BlockData {
+    fn to_geo_idx(
+        &self,
+        geo_pal: Option<&mut crate::mesh::chunk::GeoPalette>,
+        geo_registry: Option<GeometryRegistry>,
+        vox_registry: Option<BlockRegistry>,
+    ) -> Option<usize> {
+        if let Some(geo_registry) = geo_registry {
+            if let Some(vox_registry) = vox_registry {
+                if let Some(block_data) = vox_registry.get(&self.identifier) {
+                    if let Some(geo_pal) = geo_pal {
+                        let geo_data = geo_registry.get(
+                            &block_data
+                                .clone()
+                                .geometry
+                                .unwrap_or_default()
+                                .get_geo_namespace(),
+                        );
+
+                        let geo_data_new = geo_data.unwrap().element.clone();
+                        return Some(if geo_pal.palette.contains(&geo_data_new) {
+                            geo_pal
+                                .palette
+                                .iter()
+                                .position(|r| r.clone() == geo_data_new)
+                                .unwrap()
+                        } else {
+                            geo_pal.palette.push(geo_data_new.clone());
+                            geo_pal.palette.len() - 1
+                            // geo_pal
+                            //     .palette
+                            //     .iter()
+                            //     .position(|r| r.clone() == geo_data_new)
+                            //     .unwrap()
+                        });
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    fn to_match_idx(&self, match_pal: Option<&mut crate::mesh::chunk::BlockMatches>) -> usize {
+        if let Some(match_pal) = match_pal {
+            let trimed_identifier = trim_geo_identifier(self.identifier.clone());
+
+            if match_pal.matches.contains(&trimed_identifier) {
+                match_pal
+                    .matches
+                    .iter()
+                    .position(|r| r.clone().eq(&trimed_identifier))
+                    .unwrap()
+            } else {
+                match_pal.matches.push(trimed_identifier.clone());
+                match_pal
+                    .matches
+                    .iter()
+                    .position(|r| r.clone().eq(&trimed_identifier))
+                    .unwrap()
+            }
+        } else {
+            0
+        }
+    }
+
+    fn to_texture_uvs(
+        &self,
+        _vox_regisstry: Option<BlockRegistry>,
+        _geo_registry: Option<GeometryRegistry>,
+    ) -> Option<[(f32, f32); 6]> {
+        None
+    }
+
+    fn blocking_sides(
+        &self,
+        vox_registry: Option<BlockRegistry>,
+        geo_registry: Option<GeometryRegistry>,
+    ) -> Option<[bool; 6]> {
+        if let Some(geo_registry) = geo_registry {
+            if let Some(vox_registry) = vox_registry {
+                if let Some(block_data) = vox_registry.get(&self.identifier) {
+                    if let Some(geo_data) = geo_registry.get(
+                        &block_data
+                            .clone()
+                            .geometry
+                            .unwrap_or_default()
+                            .get_geo_namespace(),
+                    ) {
+                        return Some(geo_data.blocks);
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    fn light_level() -> Option<u8> {
+        None
+    }
 }
 
 #[cfg(feature = "block")]
