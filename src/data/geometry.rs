@@ -70,6 +70,7 @@ impl BlockGeometry {
 pub struct FaceDescript {
     pub uv: [((i8, i8), (i8, i8)); 6],
     pub discard: [bool; 6], // Should we completely ignore this face regardless
+    pub texture_variance: [bool; 6], // Should we randomly rotate this faces uvs
     pub cull: [bool; 6],    // Should this face be culled if there is a block next to it
     pub origin: (i8, i8, i8),
     pub end: (i8, i8, i8),
@@ -105,6 +106,7 @@ impl Default for BlockGeo {
                 end: (16, 16, 16),
                 rotation: (0, 0, 0),
                 pivot: (0, 0, 0),
+                texture_variance: [false, false, false, false, false, false],
             }],
         }
     }

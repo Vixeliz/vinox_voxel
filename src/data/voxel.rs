@@ -34,34 +34,6 @@ pub enum VoxelVisibility {
     Transparent,
 }
 
-#[cfg(feature = "render")]
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-/// This is the data that is actually used for rendering. We store it seperatly for performance
-pub struct RenderedBlockData {
-    pub geo_index: usize,
-    pub match_index: usize,
-    pub visibility: VoxelVisibility,
-    pub textures: [usize; 6],
-    pub tex_variance: [bool; 6],
-    pub blocks: [bool; 6],
-    pub light: u8,
-}
-
-#[cfg(feature = "render")]
-impl Default for RenderedBlockData {
-    fn default() -> Self {
-        RenderedBlockData {
-            visibility: VoxelVisibility::Empty,
-            blocks: [false, false, false, false, false, false],
-            tex_variance: [false, false, false, false, false, false],
-            textures: [0, 0, 0, 0, 0, 0],
-            geo_index: 0,
-            match_index: 0,
-            light: 0,
-        }
-    }
-}
-
 // Anything optional here that is necessary for the game to function but we have a default value for ie texture or geometry
 // NOTE: We will also take in any children blocks this block may have. ie any slab, fence, stair variant etc
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone)]
