@@ -1323,6 +1323,7 @@ pub fn generate_mesh<
                 match voxel.visibility {
                     EMPTY => continue,
                     visibility => {
+                        println!("AA");
                         let neighbor_block = [
                             chunk.voxels()[ChunkBoundary::<V, R>::linearize(x - 1, y, z)],
                             chunk.voxels()[ChunkBoundary::<V, R>::linearize(x + 1, y, z)],
@@ -1519,6 +1520,10 @@ pub fn full_mesh<
     }
 
     let mut mesh = VoxMesh::default();
+    mesh.vertices = positions.clone();
+    mesh.normals = normals.clone();
+    mesh.colors = Some(final_color.clone());
+    mesh.indices = indices.clone();
     // let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     // mesh.set_indices(Some(Indices::U32(indices)));
     // mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions.clone());
@@ -1564,6 +1569,10 @@ pub fn full_mesh<
     }
 
     let mut transparent_mesh = VoxMesh::default();
+    transparent_mesh.vertices = positions.clone();
+    transparent_mesh.normals = normals.clone();
+    transparent_mesh.colors = Some(final_color.clone());
+    transparent_mesh.indices = indices.clone();
     // let mut transparent_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     // transparent_mesh.set_indices(Some(Indices::U32(indices)));
     // transparent_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions.clone());

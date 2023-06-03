@@ -27,3 +27,12 @@ geometry = []
 light = []
 block = ["ron", "geometry"]
 scripting = ["block", "rhai"]
+
+[dev-dependencies]
+bevy = "0.10.1"
+bevy_flycam = "*"
+
+[[example]]
+name = "chunk"
+
+# dependencies = ["bevy"]

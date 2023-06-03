@@ -42,7 +42,6 @@ pub struct Block {
     pub textures: Option<HashMap<Option<String>, Option<String>>>,
     pub geometry: Option<BlockGeometry>,
     pub auto_geo: Option<Vec<BlockGeometry>>, // Contains strings of geometry we wan't to auto generate
-    pub tex_variance: Option<[Option<bool>; 6]>,
     pub visibility: Option<VoxelVisibility>,
     pub has_item: Option<bool>, // Basically whether or not we should auto generate an item for this block                                // pub properties: Option<Vec<Box<BlockData>>>,
 }
@@ -239,7 +238,7 @@ impl Default for BlockData {
 impl BlockData {
     pub fn new(namespace: String, name: String) -> Self {
         BlockData {
-            identifier: namespace + &name,
+            identifier: namespace + ":" + &name,
             ..Default::default()
         }
     }
