@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use ahash::{HashMap, HashMapExt};
 use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use strum::EnumString;

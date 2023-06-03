@@ -1,10 +1,10 @@
+use ahash::{HashMap, HashMapExt};
 use bevy::render::mesh::Indices;
 use bevy::render::render_resource::PrimitiveTopology;
 use bevy::utils::default;
 use bevy::{asset::LoadState, prelude::*};
 use bevy_flycam::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use vinox_voxel::{mesh::mesh::full_mesh, prelude::*};
 
 #[derive(Resource, Default, DerefMut, Deref)]

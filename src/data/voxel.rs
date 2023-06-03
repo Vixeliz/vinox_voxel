@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use crate::{mesh::chunk::RenderedVoxel, prelude::*};
+use ahash::{HashMap, HashMapExt};
 use bevy::prelude::*;
 use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
