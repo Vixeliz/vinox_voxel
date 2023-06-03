@@ -35,12 +35,19 @@ fn setup(
     );
 
     let mut chunk = ChunkData::<BlockData, BlockRegistry>::default();
-    for x in 0..CHUNK_SIZE {
-        for z in 0..CHUNK_SIZE {
-            chunk.set(
-                RelativeVoxelPos::new(x as u32, 1, z as u32),
-                BlockData::new("vinox".to_string(), "test".to_string()),
-            );
+    for y in 0..2 {
+        for x in 0..CHUNK_SIZE {
+            for z in 0..CHUNK_SIZE {
+                if y == 1 {
+                    if x == CHUNK_SIZE - 1 || z == CHUNK_SIZE - 1 || x == 0 || z == 0 {
+                        continue;
+                    }
+                }
+                chunk.set(
+                    RelativeVoxelPos::new(x as u32, y + 1, z as u32),
+                    BlockData::new("vinox".to_string(), "test".to_string()),
+                );
+            }
         }
     }
 
