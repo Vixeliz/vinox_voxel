@@ -112,10 +112,23 @@ impl Default for BlockGeo {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Geometry {
     pub namespace: String, // TODO: Make sure that we only allow one namespace:name pair
     pub name: String,      // Name of the recipe
     pub blocks: [bool; 6], // Does this block face block the face next to it so its culled
+    pub blocks_self: Option<[bool; 6]>, // Does this block face block the face next to it so its culled. Only applies to the same geometry type // This is temporary until I figure out a better way. This doesn't cover something like stairs blocking the slab geometry. But is better than no culling
     pub element: BlockGeo,
+}
+
+impl Default for Geometry {
+    fn default() -> Self {
+        Self {
+            namespace: "vinox".to_string(),
+            name: "block".to_string(),
+            blocks: [true, true, true, true, true, true],
+            blocks_self: None,
+            element: BlockGeo::default(),
+        }
+    }
 }

@@ -94,6 +94,7 @@ fn setup(
                 namespace: "vinox".to_string(),
                 name: "slab".to_string(),
                 blocks: [false, false, true, false, false, false],
+                blocks_self: Some([true, true, false, false, true, true]),
                 element: BlockGeo {
                     pivot: (0, 0, 0),
                     rotation: (0, 0, 0),
@@ -108,7 +109,7 @@ fn setup(
                         ],
                         discard: [false, false, false, false, false, false],
                         texture_variance: [false, false, false, false, false, false],
-                        cull: [false, false, true, false, false, false],
+                        cull: [true, true, true, false, true, true],
                         origin: (0, 0, 0),
                         end: (16, 8, 16),
                         rotation: (0, 0, 0),
@@ -172,17 +173,18 @@ fn setup(
             brightness: 0.2,
         });
 
-        commands.spawn(PointLightBundle {
-            point_light: PointLight::default(),
-            transform: Transform::from_xyz(8.0, 3.0, 8.0),
-            ..default()
-        });
+        // commands.spawn(PointLightBundle {
+        //     point_light: PointLight::default(),
+        //     transform: Transform::from_xyz(8.0, 3.0, 8.0),
+        //     ..default()
+        // });
 
         commands.spawn(PbrBundle {
             mesh: meshes.add(bevy_mesh),
             material: materials.add(StandardMaterial {
                 base_color: Color::WHITE,
                 base_color_texture: Some(asset_registry.texture_atlas.texture.clone()),
+                perceptual_roughness: 1.0,
                 ..Default::default()
             }),
             transform: Transform::from_xyz(0.0, 0.0, 0.0),

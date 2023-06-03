@@ -1381,8 +1381,26 @@ pub fn generate_mesh<
                                     5 => neighbor_block[i].blocks[4],
                                     _ => true,
                                 };
+
+                                let mut blocked_self = false;
+                                if let Some(blocks) = neighbor_block[i].blocks_self {
+                                    blocked_self = match i {
+                                        0 => blocks[1],
+                                        1 => blocks[0],
+                                        2 => blocks[3],
+                                        3 => blocks[2],
+                                        4 => blocks[5],
+                                        5 => blocks[4],
+                                        _ => true,
+                                    };
+                                }
+
                                 let other = neighbor.visibility;
-                                let generate = if culled && blocked {
+                                let generate = if culled
+                                    && (blocked
+                                        || (neighbor.match_index == voxel.match_index
+                                            && blocked_self))
+                                {
                                     if solid_pass {
                                         match (visibility, other) {
                                             (OPAQUE, EMPTY) | (OPAQUE, TRANSPARENT) => true,

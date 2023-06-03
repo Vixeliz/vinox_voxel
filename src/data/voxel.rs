@@ -212,7 +212,7 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
         &self,
         vox_registry: Option<&BlockRegistry>,
         geo_registry: Option<&GeometryRegistry>,
-    ) -> Option<[bool; 6]> {
+    ) -> Option<([bool; 6], Option<[bool; 6]>)> {
         if let Some(geo_registry) = geo_registry {
             if let Some(vox_registry) = vox_registry {
                 if let Some(block_data) = vox_registry.get(&self.identifier) {
@@ -223,7 +223,7 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
                             .unwrap_or_default()
                             .get_geo_namespace(),
                     ) {
-                        return Some(geo_data.blocks);
+                        return Some((geo_data.blocks, geo_data.blocks_self));
                     }
                 }
             }

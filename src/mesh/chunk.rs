@@ -50,7 +50,7 @@ pub trait RenderedVoxel<
         &self,
         vox_registry: Option<&R>,
         geo_registry: Option<&GeometryRegistry>,
-    ) -> Option<[bool; 6]>;
+    ) -> Option<([bool; 6], Option<[bool; 6]>)>;
 
     fn light_level() -> Option<u8>;
     fn to_visibility(
@@ -491,7 +491,7 @@ pub fn get_rend<
     let geo_index = voxel.to_geo_idx(Some(geo_pal), Some(geo_registry), Some(vox_registry));
     let match_index = voxel.to_match_idx(Some(matching_blocks));
     let visibility = voxel.to_visibility(Some(vox_registry), None);
-    let blocks = voxel.blocking_sides(Some(vox_registry), Some(geo_registry));
+    let blocks_tuple = voxel.blocking_sides(Some(vox_registry), Some(geo_registry));
     let textures = voxel.to_texture_idx(Some(vox_registry), Some(asset_registry));
     RenderedBlockData {
         geo_index,
@@ -502,7 +502,13 @@ pub fn get_rend<
         visibility: visibility.unwrap_or_default(),
         // has_direction: block_data.has_direction.unwrap_or(false),
         // exclusive_direction: block_data.exclusive_direction.unwrap_or(false),
-        blocks: blocks.unwrap_or([true, true, true, true, true, true]),
+        blocks: blocks_tuple
+            .unwrap_or(([true, true, true, true, true, true], None))
+            .0,
+        // ([true, true, true, true, true, true]),
+        blocks_self: blocks_tuple
+            .unwrap_or(([true, true, true, true, true, true], None))
+            .1,
         light: None,
     }
 }
@@ -516,6 +522,7 @@ pub struct RenderedBlockData {
     pub visibility: VoxelVisibility,
     pub textures: Option<[usize; 6]>,
     pub blocks: [bool; 6],
+    pub blocks_self: Option<[bool; 6]>,
     pub light: Option<u8>,
 }
 
@@ -525,6 +532,7 @@ impl Default for RenderedBlockData {
         RenderedBlockData {
             visibility: VoxelVisibility::Empty,
             blocks: [false, false, false, false, false, false],
+            blocks_self: None,
             // tex_variance: [false, false, false, false, false, false],
             textures: None,
             geo_index: None,
