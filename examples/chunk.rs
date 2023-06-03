@@ -129,6 +129,17 @@ fn setup(
                 block_texture.clone(),
             ],
         );
+        texture_handles.insert(
+            "vinox:slab".to_string(),
+            [
+                block_texture.clone(),
+                block_texture.clone(),
+                block_texture.clone(),
+                block_texture.clone(),
+                block_texture.clone(),
+                block_texture.clone(),
+            ],
+        );
 
         let asset_registry = AssetRegistry::from_block_textures(textures, texture_handles);
 
