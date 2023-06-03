@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use bevy::sprite::TextureAtlas;
 use bevy_math::prelude::*;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
@@ -1202,112 +1203,131 @@ impl<'a> Face<'a> {
         self.side.normals()
     }
 
-    // pub fn uvs(
-    //     &self,
-    //     // texture_atlas: &TextureAtlas,
-    //     matched_ind: usize,
-    //     world_pos: IVec3,
-    //     chunk: &ChunkBoundary,
-    // ) -> [[f32; 2]; 4] {
-    //     let texture_index = self.quad.data.textures[matched_ind];
-    //     let geo = chunk.geometry_pal.get(self.quad.data.geo_index).unwrap();
-    //     let uv = geo.cubes.get(self.quad.cube).unwrap().uv;
-    //     let mut face_tex = [[0.0; 2]; 4];
-    //     let min_x = texture_atlas.textures.get(texture_index).unwrap().min.x;
-    //     let min_y = texture_atlas.textures.get(texture_index).unwrap().min.y;
-    //     let face_index = match (&self.side.axis, &self.side.positive) {
-    //         (Axis::X, false) => 0,
-    //         (Axis::X, true) => 1,
-    //         (Axis::Y, false) => 2,
-    //         (Axis::Y, true) => 3,
-    //         (Axis::Z, false) => 4,
-    //         (Axis::Z, true) => 5,
-    //     };
-    //     let (min_x, min_y) = (
-    //         min_x + uv.get(face_index).unwrap().0 .0 as f32,
-    //         min_y + uv.get(face_index).unwrap().0 .1 as f32,
-    //     );
-    //     let (max_x, max_y) = (
-    //         min_x + uv.get(face_index).unwrap().1 .0 as f32,
-    //         min_y + uv.get(face_index).unwrap().1 .1 as f32,
-    //     );
-    //     let (min_x, min_y, max_x, max_y) = (
-    //         min_x / texture_atlas.size.x,
-    //         min_y / texture_atlas.size.y,
-    //         max_x / texture_atlas.size.x,
-    //         max_y / texture_atlas.size.y,
-    //     );
-    //     let flip_num = if self.quad.data.tex_variance[face_index] {
-    //         let mut rng: StdRng = SeedableRng::seed_from_u64(world_pos.reflect_hash().unwrap());
-    //         rng.gen_range(0..6)
-    //     } else {
-    //         0
-    //     };
-    //     match flip_num {
-    //         0 => {
-    //             face_tex[2][0] = min_x;
-    //             face_tex[2][1] = min_y;
-    //             face_tex[3][0] = max_x;
-    //             face_tex[3][1] = min_y;
-    //             face_tex[0][0] = min_x;
-    //             face_tex[0][1] = max_y;
-    //             face_tex[1][0] = max_x;
-    //             face_tex[1][1] = max_y;
-    //         }
-    //         1 => {
-    //             face_tex[2][0] = max_x;
-    //             face_tex[2][1] = max_y;
-    //             face_tex[3][0] = min_x;
-    //             face_tex[3][1] = max_y;
-    //             face_tex[0][0] = max_x;
-    //             face_tex[0][1] = min_y;
-    //             face_tex[1][0] = min_x;
-    //             face_tex[1][1] = min_y;
-    //         }
-    //         2 => {
-    //             face_tex[2][0] = max_x;
-    //             face_tex[2][1] = min_y;
-    //             face_tex[3][0] = min_x;
-    //             face_tex[3][1] = min_y;
-    //             face_tex[0][0] = max_x;
-    //             face_tex[0][1] = max_y;
-    //             face_tex[1][0] = min_x;
-    //             face_tex[1][1] = max_y;
-    //         }
-    //         3 => {
-    //             face_tex[2][0] = min_x;
-    //             face_tex[2][1] = max_y;
-    //             face_tex[3][0] = max_x;
-    //             face_tex[3][1] = max_y;
-    //             face_tex[0][0] = min_x;
-    //             face_tex[0][1] = min_y;
-    //             face_tex[1][0] = max_x;
-    //             face_tex[1][1] = min_y;
-    //         }
-    //         4 => {
-    //             face_tex[2][0] = max_x;
-    //             face_tex[2][1] = max_y;
-    //             face_tex[3][0] = max_x;
-    //             face_tex[3][1] = min_y;
-    //             face_tex[0][0] = min_x;
-    //             face_tex[0][1] = max_y;
-    //             face_tex[1][0] = min_x;
-    //             face_tex[1][1] = min_y;
-    //         }
-    //         5 => {
-    //             face_tex[2][0] = min_x;
-    //             face_tex[2][1] = min_y;
-    //             face_tex[3][0] = min_x;
-    //             face_tex[3][1] = max_y;
-    //             face_tex[0][0] = max_x;
-    //             face_tex[0][1] = min_y;
-    //             face_tex[1][0] = max_x;
-    //             face_tex[1][1] = max_y;
-    //         }
-    //         _ => {}
-    //     }
-    //     face_tex
-    // }
+    pub fn uvs<
+        V: Voxel<R> + Clone + Serialize + Eq + Default + RenderedVoxel<V, R>,
+        R: VoxRegistry<V> + Clone + Default,
+    >(
+        &self,
+        texture_atlas: &TextureAtlas,
+        matched_ind: usize,
+        world_pos: IVec3,
+        chunk: &ChunkBoundary<V, R>,
+    ) -> [[f32; 2]; 4] {
+        if let Some(textures) = self.quad.data.textures {
+            let texture_index = self.quad.data.textures.unwrap()[textures[matched_ind]];
+            let geo = chunk
+                .geometry_pal
+                .palette
+                .get(self.quad.data.geo_index.unwrap_or_default())
+                .unwrap();
+            let uv = geo.cubes.get(self.quad.cube).unwrap().uv;
+            let mut face_tex = [[0.0; 2]; 4];
+            let min_x = texture_atlas.textures.get(texture_index).unwrap().min.x;
+            let min_y = texture_atlas.textures.get(texture_index).unwrap().min.y;
+            let face_index = match (&self.side.axis, &self.side.positive) {
+                (Axis::X, false) => 0,
+                (Axis::X, true) => 1,
+                (Axis::Y, false) => 2,
+                (Axis::Y, true) => 3,
+                (Axis::Z, false) => 4,
+                (Axis::Z, true) => 5,
+            };
+            let (min_x, min_y) = (
+                min_x + uv.get(face_index).unwrap().0 .0 as f32,
+                min_y + uv.get(face_index).unwrap().0 .1 as f32,
+            );
+            let (max_x, max_y) = (
+                min_x + uv.get(face_index).unwrap().1 .0 as f32,
+                min_y + uv.get(face_index).unwrap().1 .1 as f32,
+            );
+            let (min_x, min_y, max_x, max_y) = (
+                min_x / texture_atlas.size.x,
+                min_y / texture_atlas.size.y,
+                max_x / texture_atlas.size.x,
+                max_y / texture_atlas.size.y,
+            );
+            face_tex[2][0] = min_x;
+            face_tex[2][1] = min_y;
+            face_tex[3][0] = max_x;
+            face_tex[3][1] = min_y;
+            face_tex[0][0] = min_x;
+            face_tex[0][1] = max_y;
+            face_tex[1][0] = max_x;
+            face_tex[1][1] = max_y;
+            // let flip_num = if self.quad.data.tex_variance[face_index] {
+            //     let mut rng: StdRng = SeedableRng::seed_from_u64(world_pos.reflect_hash().unwrap());
+            //     rng.gen_range(0..6)
+            // } else {
+            //     0
+            // };
+            // match flip_num {
+            //     0 => {
+            //         face_tex[2][0] = min_x;
+            //         face_tex[2][1] = min_y;
+            //         face_tex[3][0] = max_x;
+            //         face_tex[3][1] = min_y;
+            //         face_tex[0][0] = min_x;
+            //         face_tex[0][1] = max_y;
+            //         face_tex[1][0] = max_x;
+            //         face_tex[1][1] = max_y;
+            //     }
+            //     1 => {
+            //         face_tex[2][0] = max_x;
+            //         face_tex[2][1] = max_y;
+            //         face_tex[3][0] = min_x;
+            //         face_tex[3][1] = max_y;
+            //         face_tex[0][0] = max_x;
+            //         face_tex[0][1] = min_y;
+            //         face_tex[1][0] = min_x;
+            //         face_tex[1][1] = min_y;
+            //     }
+            //     2 => {
+            //         face_tex[2][0] = max_x;
+            //         face_tex[2][1] = min_y;
+            //         face_tex[3][0] = min_x;
+            //         face_tex[3][1] = min_y;
+            //         face_tex[0][0] = max_x;
+            //         face_tex[0][1] = max_y;
+            //         face_tex[1][0] = min_x;
+            //         face_tex[1][1] = max_y;
+            //     }
+            //     3 => {
+            //         face_tex[2][0] = min_x;
+            //         face_tex[2][1] = max_y;
+            //         face_tex[3][0] = max_x;
+            //         face_tex[3][1] = max_y;
+            //         face_tex[0][0] = min_x;
+            //         face_tex[0][1] = min_y;
+            //         face_tex[1][0] = max_x;
+            //         face_tex[1][1] = min_y;
+            //     }
+            //     4 => {
+            //         face_tex[2][0] = max_x;
+            //         face_tex[2][1] = max_y;
+            //         face_tex[3][0] = max_x;
+            //         face_tex[3][1] = min_y;
+            //         face_tex[0][0] = min_x;
+            //         face_tex[0][1] = max_y;
+            //         face_tex[1][0] = min_x;
+            //         face_tex[1][1] = min_y;
+            //     }
+            //     5 => {
+            //         face_tex[2][0] = min_x;
+            //         face_tex[2][1] = min_y;
+            //         face_tex[3][0] = min_x;
+            //         face_tex[3][1] = max_y;
+            //         face_tex[0][0] = max_x;
+            //         face_tex[0][1] = min_y;
+            //         face_tex[1][0] = max_x;
+            //         face_tex[1][1] = max_y;
+            //     }
+            //     _ => {}
+            // }
+            face_tex
+        } else {
+            [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+        }
+    }
 
     pub fn voxel(&self) -> [usize; 3] {
         self.quad.voxel
@@ -1466,7 +1486,7 @@ pub fn full_mesh<
     R: VoxRegistry<V> + Clone + Default,
 >(
     raw_chunk: &ChunkBoundary<V, R>,
-    // texture_atlas: &TextureAtlas,
+    texture_atlas: &TextureAtlas,
     chunk_pos: IVec3,
 ) -> MeshedChunk {
     let mut buffer = QuadGroups::default();
@@ -1474,7 +1494,7 @@ pub fn full_mesh<
     let mut positions = Vec::new();
     let mut indices = Vec::new();
     let mut normals = Vec::new();
-    // let mut uvs = Vec::new();
+    let mut uvs = Vec::new();
     let mut ao = Vec::new();
     let mut light = Vec::new();
     for face in buffer.iter_with_ao(raw_chunk) {
@@ -1483,14 +1503,14 @@ pub fn full_mesh<
         normals.extend_from_slice(&face.normals());
         ao.extend_from_slice(&face.aos());
         light.extend_from_slice(&face.light());
-        // let matched_index = match (face.side.axis, face.side.positive) {
-        //     (Axis::X, false) => 2,
-        //     (Axis::X, true) => 3,
-        //     (Axis::Y, false) => 1,
-        //     (Axis::Y, true) => 0,
-        //     (Axis::Z, false) => 5,
-        //     (Axis::Z, true) => 4,
-        // };
+        let matched_index = match (face.side.axis, face.side.positive) {
+            (Axis::X, false) => 2,
+            (Axis::X, true) => 3,
+            (Axis::Y, false) => 1,
+            (Axis::Y, true) => 0,
+            (Axis::Z, false) => 5,
+            (Axis::Z, true) => 4,
+        };
         // let _matched_neighbor = match (face.side.axis, face.side.positive) {
         //     (Axis::X, false) => (face.voxel()[0] - 1, face.voxel()[1], face.voxel()[2]),
         //     (Axis::X, true) => (face.voxel()[0] + 1, face.voxel()[1], face.voxel()[2]),
@@ -1500,20 +1520,20 @@ pub fn full_mesh<
         //     (Axis::Z, true) => (face.voxel()[0], face.voxel()[1], face.voxel()[2] + 1),
         // };
 
-        // uvs.extend_from_slice(
-        //     &face.uvs(
-        //         texture_atlas,
-        //         matched_index,
-        //         VoxelPos::from(Vec3::new(
-        //             face.voxel()[0] as f32,
-        //             face.voxel()[1] as f32,
-        //             face.voxel()[2] as f32,
-        //         ))
-        //         // .as_vec3()
-        //         .into(),
-        //         raw_chunk,
-        //     ),
-        // );
+        uvs.extend_from_slice(
+            &face.uvs(
+                texture_atlas,
+                matched_index,
+                VoxelPos::from(Vec3::new(
+                    face.voxel()[0] as f32,
+                    face.voxel()[1] as f32,
+                    face.voxel()[2] as f32,
+                ))
+                // .as_vec3()
+                .into(),
+                raw_chunk,
+            ),
+        );
     }
     let final_ao = ao_convert(ao);
     let mut final_color = Vec::new();
@@ -1531,6 +1551,7 @@ pub fn full_mesh<
     mesh.normals = normals.clone();
     mesh.colors = Some(final_color.clone());
     mesh.indices = indices.clone();
+    mesh.uvs = Some(uvs.clone());
     // let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
     // mesh.set_indices(Some(Indices::U32(indices)));
     // mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions.clone());
@@ -1544,7 +1565,7 @@ pub fn full_mesh<
     let mut positions = Vec::new();
     let mut indices = Vec::new();
     let mut normals = Vec::new();
-    // let mut uvs = Vec::new();
+    let mut uvs = Vec::new();
     for face in buffer.iter_with_ao(raw_chunk) {
         indices.extend_from_slice(&face.indices(positions.len() as u32));
 
@@ -1560,19 +1581,19 @@ pub fn full_mesh<
             (Axis::Z, true) => 4,
         };
 
-        // uvs.extend_from_slice(
-        //     &face.uvs(
-        //         texture_atlas,
-        //         matched_index,
-        //         VoxelPos::from(Vec3::new(
-        //             face.voxel()[0] as f32,
-        //             face.voxel()[1] as f32,
-        //             face.voxel()[2] as f32,
-        //         ))
-        //         .into(),
-        //         raw_chunk,
-        //     ),
-        // );
+        uvs.extend_from_slice(
+            &face.uvs(
+                texture_atlas,
+                matched_index,
+                VoxelPos::from(Vec3::new(
+                    face.voxel()[0] as f32,
+                    face.voxel()[1] as f32,
+                    face.voxel()[2] as f32,
+                ))
+                .into(),
+                raw_chunk,
+            ),
+        );
     }
 
     let mut transparent_mesh = VoxMesh::default();
@@ -1580,6 +1601,7 @@ pub fn full_mesh<
     transparent_mesh.normals = normals.clone();
     transparent_mesh.colors = Some(final_color.clone());
     transparent_mesh.indices = indices.clone();
+    transparent_mesh.uvs = Some(uvs.clone());
     // let mut transparent_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     // transparent_mesh.set_indices(Some(Indices::U32(indices)));
     // transparent_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions.clone());

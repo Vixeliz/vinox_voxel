@@ -19,6 +19,7 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut textures: ResMut<Assets<Image>>,
 ) {
     let mut registry = BlockRegistry::default();
     registry.0.insert(
@@ -103,13 +104,17 @@ fn setup(
         },
     );
 
+    let mut asset_registry = AssetRegistry::from_block_textures(textures, HashMap::new());
+
     let mesh = full_mesh(
         &ChunkBoundary::<BlockData, BlockRegistry>::new(
             chunk,
             Box::default(),
             &registry,
             &geo_table,
+            &asset_registry,
         ),
+        &asset_registry.texture_atlas,
         IVec3::new(0, 0, 0),
     );
     // println!("{}", mesh.chunk_mesh.vertices.len());

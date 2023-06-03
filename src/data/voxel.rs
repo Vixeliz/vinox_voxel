@@ -40,7 +40,7 @@ pub enum VoxelVisibility {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone)]
 pub struct Block {
     pub identifier: String, // TODO: Make sure that we only allow one namespace:name pair
-    pub textures: Option<HashMap<Option<String>, Option<String>>>,
+    pub textures: Option<[Option<String>; 6]>,
     pub geometry: Option<BlockGeometry>,
     pub auto_geo: Option<Vec<BlockGeometry>>, // Contains strings of geometry we wan't to auto generate
     pub visibility: Option<VoxelVisibility>,
@@ -186,12 +186,17 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
         }
     }
 
-    fn to_texture_uvs(
+    fn to_texture_idx(
         &self,
-        vox_registry: Option<&BlockRegistry>,
-        _geo_registry: Option<&GeometryRegistry>,
-    ) -> Option<[(f32, f32); 6]> {
-        if let Some(vox_registry) = vox_registry {}
+        _vox_registry: Option<&BlockRegistry>,
+        asset_registry: Option<&AssetRegistry>,
+    ) -> Option<[usize; 6]> {
+        if let Some(asset_registry) = asset_registry {
+            return asset_registry
+                .texture_indexes
+                .get(&self.identifier)
+                .copied();
+        }
         None
     }
 
