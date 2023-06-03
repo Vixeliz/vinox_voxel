@@ -1398,8 +1398,7 @@ pub fn generate_mesh<
                                 let other = neighbor.visibility;
                                 let generate = if culled
                                     && (blocked
-                                        || (neighbor.match_index == voxel.match_index
-                                            && blocked_self))
+                                        || (neighbor.geo_index == voxel.geo_index && blocked_self))
                                 {
                                     if solid_pass {
                                         match (visibility, other) {
