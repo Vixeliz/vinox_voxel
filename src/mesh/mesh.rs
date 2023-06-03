@@ -1323,7 +1323,6 @@ pub fn generate_mesh<
                 match voxel.visibility {
                     EMPTY => continue,
                     visibility => {
-                        println!("AA");
                         let neighbor_block = [
                             chunk.voxels()[ChunkBoundary::<V, R>::linearize(x - 1, y, z)],
                             chunk.voxels()[ChunkBoundary::<V, R>::linearize(x + 1, y, z)],
