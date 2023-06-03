@@ -37,6 +37,12 @@ pub enum VoxelVisibility {
 
 // Anything optional here that is necessary for the game to function but we have a default value for ie texture or geometry
 // NOTE: We will also take in any children blocks this block may have. ie any slab, fence, stair variant etc
+/// 00: West
+/// 01: East
+/// 02: Down
+/// 03: Up
+/// 04: South
+/// 05: North
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone)]
 pub struct Block {
     pub identifier: String, // TODO: Make sure that we only allow one namespace:name pair
@@ -66,6 +72,7 @@ impl AssetRegistry {
         for handle in block_textures.values() {
             for item in handle {
                 let Some(texture) = textures.get(item) else {
+                    warn!("Failed to load texture");
         // warn!("{:?} did not resolve to an `Image` asset.", asset_server.get_handle_path(item));
         continue;
                 };
@@ -82,6 +89,7 @@ impl AssetRegistry {
                     .unwrap_or_default();
             }
             texture_indexes.insert(identifier.clone(), texture_index);
+            println!("{texture_index:?}");
         }
 
         // let atlas_handle = texture_atlases.add(texture_atlas);
