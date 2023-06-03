@@ -33,6 +33,17 @@ fn setup(
             has_item: None,
         },
     );
+    registry.0.insert(
+        "vinox:slab".to_string(),
+        Block {
+            identifier: "vinox:slab".to_string(),
+            textures: None,
+            geometry: Some(BlockGeometry::Slab),
+            auto_geo: None,
+            visibility: Some(VoxelVisibility::Opaque),
+            has_item: None,
+        },
+    );
 
     let mut chunk = ChunkData::<BlockData, BlockRegistry>::default();
     for y in 0..2 {
@@ -40,6 +51,16 @@ fn setup(
             for z in 0..CHUNK_SIZE {
                 if y == 1 {
                     if x == CHUNK_SIZE - 1 || z == CHUNK_SIZE - 1 || x == 0 || z == 0 {
+                        chunk.set(
+                            RelativeVoxelPos::new(x as u32, y + 1, z as u32),
+                            BlockData::new("vinox".to_string(), "test".to_string()),
+                        );
+                        continue;
+                    } else {
+                        chunk.set(
+                            RelativeVoxelPos::new(x as u32, y + 1, z as u32),
+                            BlockData::new("vinox".to_string(), "slab".to_string()),
+                        );
                         continue;
                     }
                 }
@@ -53,6 +74,35 @@ fn setup(
 
     let mut geo_table = GeometryRegistry(HashMap::default());
     geo_table.insert("vinox:block".to_string(), Geometry::default());
+    geo_table.insert(
+        "vinox:slab".to_string(),
+        Geometry {
+            namespace: "vinox".to_string(),
+            name: "slab".to_string(),
+            blocks: [false, false, true, false, false, false],
+            element: BlockGeo {
+                pivot: (0, 0, 0),
+                rotation: (0, 0, 0),
+                cubes: vec![FaceDescript {
+                    uv: [
+                        ((0, 0), (16, 8)),
+                        ((0, 0), (16, 8)),
+                        ((16, 16), (-16, -16)),
+                        ((16, 16), (-16, -16)),
+                        ((0, 0), (16, 8)),
+                        ((0, 0), (16, 8)),
+                    ],
+                    discard: [false, false, false, false, false, false],
+                    texture_variance: [false, false, false, false, false, false],
+                    cull: [false, false, true, false, false, false],
+                    origin: (0, 0, 0),
+                    end: (16, 8, 16),
+                    rotation: (0, 0, 0),
+                    pivot: (8, 8, 8),
+                }],
+            },
+        },
+    );
 
     let mesh = full_mesh(
         &ChunkBoundary::<BlockData, BlockRegistry>::new(

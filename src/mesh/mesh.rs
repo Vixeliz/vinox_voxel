@@ -975,14 +975,22 @@ pub(crate) fn ao_value(side1: bool, corner: bool, side2: bool) -> u32 {
 
 pub(crate) fn side_aos(neighbors: [(RenderedBlockData, &BlockGeo); 8]) -> [u32; 4] {
     let ns = [
-        neighbors[0].0.visibility == OPAQUE && neighbors[0].1 == &BlockGeo::default(),
-        neighbors[1].0.visibility == OPAQUE && neighbors[1].1 == &BlockGeo::default(),
-        neighbors[2].0.visibility == OPAQUE && neighbors[2].1 == &BlockGeo::default(),
-        neighbors[3].0.visibility == OPAQUE && neighbors[3].1 == &BlockGeo::default(),
-        neighbors[4].0.visibility == OPAQUE && neighbors[4].1 == &BlockGeo::default(),
-        neighbors[5].0.visibility == OPAQUE && neighbors[5].1 == &BlockGeo::default(),
-        neighbors[6].0.visibility == OPAQUE && neighbors[6].1 == &BlockGeo::default(),
-        neighbors[7].0.visibility == OPAQUE && neighbors[7].1 == &BlockGeo::default(),
+        neighbors[0].0.visibility == OPAQUE,
+        // && neighbors[0].1 == &BlockGeo::default(),
+        neighbors[1].0.visibility == OPAQUE,
+        // && neighbors[1].1 == &BlockGeo::default(),
+        neighbors[2].0.visibility == OPAQUE,
+        // && neighbors[2].1 == &BlockGeo::default(),
+        neighbors[3].0.visibility == OPAQUE,
+        // && neighbors[3].1 == &BlockGeo::default(),
+        neighbors[4].0.visibility == OPAQUE,
+        // && neighbors[4].1 == &BlockGeo::default(),
+        neighbors[5].0.visibility == OPAQUE,
+        // && neighbors[5].1 == &BlockGeo::default(),
+        neighbors[6].0.visibility == OPAQUE,
+        // && neighbors[6].1 == &BlockGeo::default(),
+        neighbors[7].0.visibility == OPAQUE,
+        // && neighbors[7].1 == &BlockGeo::default(),
     ];
 
     [
