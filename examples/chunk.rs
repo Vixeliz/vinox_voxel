@@ -20,7 +20,6 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // commands.spawn(Camera3dBundle::default());
     let mut registry = BlockRegistry::default();
     registry.0.insert(
         "vinox:test".to_string(),
@@ -137,9 +136,6 @@ fn setup(
         mesh: meshes.add(bevy_mesh),
         material: materials.add(StandardMaterial::from(Color::WHITE)),
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
-        ..Default::default() // transform: todo!(),
-                             // global_transform: todo!(),
-                             // visibility: todo!(),
-                             // computed_visibility: todo!(),
+        ..Default::default()
     });
 }
