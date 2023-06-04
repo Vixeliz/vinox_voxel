@@ -1214,7 +1214,7 @@ impl<'a> Face<'a> {
         chunk: &ChunkBoundary<V, R>,
     ) -> [[f32; 2]; 4] {
         if let Some(textures) = self.quad.data.textures {
-            let texture_index = self.quad.data.textures.unwrap()[textures[matched_ind]];
+            let texture_index = textures[matched_ind];
             let geo = chunk
                 .geometry_pal
                 .palette
