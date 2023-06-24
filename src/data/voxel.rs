@@ -53,6 +53,7 @@ pub struct Block {
 }
 
 #[derive(Deref, DerefMut, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "bevy", derive(Resource))]
 pub struct BlockRegistry(pub HashMap<String, Block>);
 
 #[cfg(feature = "render")]
