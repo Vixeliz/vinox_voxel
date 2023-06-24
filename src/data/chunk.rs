@@ -8,6 +8,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 
+#[cfg(feature = "bevy")]
+use bevy::prelude::*;
+
 pub const CHUNK_SIZE: usize = 16;
 pub const CHUNK_SIZE_ARR: u32 = CHUNK_SIZE as u32 - 1;
 pub const TOTAL_CHUNK_SIZE: usize = (CHUNK_SIZE) * (CHUNK_SIZE) * (CHUNK_SIZE);
@@ -281,6 +284,7 @@ impl BitBuffer {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(feature = "bevy", derive(Component))]
 pub struct RawChunk<
     V: Voxel<R> + Clone + Serialize + Eq + Default,
     R: VoxRegistry<V> + Clone + Default,
@@ -289,6 +293,7 @@ pub struct RawChunk<
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "bevy", derive(Component))]
 pub struct ChunkData<
     V: Voxel<R> + Clone + Serialize + Eq + Default,
     R: VoxRegistry<V> + Clone + Default,

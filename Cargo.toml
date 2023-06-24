@@ -22,9 +22,9 @@ bevy = { version = "0.10.1", optional = true, default-features = false, features
 ahash = "0.8.3"
 
 [features]
-default = ["geometry", "block", "scripting", "light", "render"]
-# bevy = []
-render = ["geometry", "block", "light", "dep:bevy"]
+default = ["geometry", "block", "scripting", "light", "render", "bevy"]
+bevy = ["dep:bevy"]
+render = ["geometry", "block", "light"]
 geometry = []
 light = []
 block = ["ron", "geometry"]
