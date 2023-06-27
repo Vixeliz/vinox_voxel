@@ -61,7 +61,7 @@ impl BlockGeometry {
     }
 
     pub fn geo_new_block(&self, name: String) -> String {
-        name + "." + &self.get_geo_name()
+        name + "." + self.get_geo_name().as_str()
     }
 }
 

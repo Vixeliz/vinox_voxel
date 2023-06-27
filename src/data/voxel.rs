@@ -1,6 +1,5 @@
 use crate::{mesh::chunk::RenderedVoxel, prelude::*};
 use ahash::{HashMap, HashMapExt};
-use bevy::prelude::*;
 use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use strum::EnumString;
@@ -53,52 +52,51 @@ pub struct Block {
 }
 
 #[derive(Deref, DerefMut, Default, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "bevy", derive(Resource))]
 pub struct BlockRegistry(pub HashMap<String, Block>);
 
 #[cfg(feature = "render")]
 #[derive(Clone)]
 pub struct AssetRegistry {
     pub texture_indexes: HashMap<String, [usize; 6]>,
-    pub texture_atlas: TextureAtlas,
+    // pub texture_atlas: TextureAtlas,
 }
 
 impl AssetRegistry {
-    pub fn from_block_textures(
-        mut textures: ResMut<Assets<Image>>,
-        block_textures: HashMap<String, [Handle<Image>; 6]>,
-    ) -> Self {
-        let mut texture_atlas_builder = TextureAtlasBuilder::default();
-        for handle in block_textures.values() {
-            for item in handle {
-                let Some(texture) = textures.get(item) else {
-                    warn!("Failed to load texture");
-        // warn!("{:?} did not resolve to an `Image` asset.", asset_server.get_handle_path(item));
-        continue;
-                };
-                texture_atlas_builder.add_texture(item.clone(), texture);
-            }
-        }
-        let texture_atlas = texture_atlas_builder.finish(&mut textures).unwrap();
-        let mut texture_indexes = HashMap::new();
-        for identifier in block_textures.keys() {
-            let mut texture_index = [0, 0, 0, 0, 0, 0];
-            for (i, texture) in texture_index.iter_mut().enumerate() {
-                *texture = texture_atlas
-                    .get_texture_index(&block_textures.get(identifier).unwrap()[i])
-                    .unwrap_or_default();
-            }
-            texture_indexes.insert(identifier.clone(), texture_index);
-            println!("{texture_index:?}");
-        }
+    // pub fn from_block_textures(
+    //     mut textures: ResMut<Assets<Image>>,
+    //     block_textures: HashMap<String, [Handle<Image>; 6]>,
+    // ) -> Self {
+    //     let mut texture_atlas_builder = TextureAtlasBuilder::default();
+    //     for handle in block_textures.values() {
+    //         for item in handle {
+    //             let Some(texture) = textures.get(item) else {
+    //                 warn!("Failed to load texture");
+    //     // warn!("{:?} did not resolve to an `Image` asset.", asset_server.get_handle_path(item));
+    //     continue;
+    //             };
+    //             texture_atlas_builder.add_texture(item.clone(), texture);
+    //         }
+    //     }
+    //     let texture_atlas = texture_atlas_builder.finish(&mut textures).unwrap();
+    //     let mut texture_indexes = HashMap::new();
+    //     for identifier in block_textures.keys() {
+    //         let mut texture_index = [0, 0, 0, 0, 0, 0];
+    //         for (i, texture) in texture_index.iter_mut().enumerate() {
+    //             *texture = texture_atlas
+    //                 .get_texture_index(&block_textures.get(identifier).unwrap()[i])
+    //                 .unwrap_or_default();
+    //         }
+    //         texture_indexes.insert(identifier.clone(), texture_index);
+    //         println!("{texture_index:?}");
+    //     }
 
-        // let atlas_handle = texture_atlases.add(texture_atlas);
-        AssetRegistry {
-            texture_indexes,
-            texture_atlas,
-        }
-        // AssetRegistry { texture_indexes: , texture_atlas:  }
-    }
+    //     // let atlas_handle = texture_atlases.add(texture_atlas);
+    //     AssetRegistry {
+    //         texture_indexes,
+    //         texture_atlas,
+    //     }
+    //     // AssetRegistry { texture_indexes: , texture_atlas:  }
+    // }
 }
 
 impl VoxRegistry<BlockData> for BlockRegistry {
@@ -296,7 +294,7 @@ impl Default for BlockData {
 impl BlockData {
     pub fn new(namespace: String, name: String) -> Self {
         BlockData {
-            identifier: namespace + ":" + &name,
+            identifier: namespace + ":" + name.as_str(),
             ..Default::default()
         }
     }

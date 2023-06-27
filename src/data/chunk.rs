@@ -1,15 +1,11 @@
 use std::marker::PhantomData;
 
-use bevy_math::UVec3;
 use bitvec::prelude::*;
 
 use ndshape::{ConstShape, ConstShape3usize};
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
-
-#[cfg(feature = "bevy")]
-use bevy::prelude::*;
 
 pub const CHUNK_SIZE: usize = 16;
 pub const CHUNK_SIZE_ARR: u32 = CHUNK_SIZE as u32 - 1;
@@ -349,7 +345,7 @@ impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone +
     pub fn is_empty(&self, registry: Option<&R>) -> bool {
         self.is_uniform()
             && self
-                .get(RelativeVoxelPos(UVec3::new(0, 0, 0)))
+                .get(RelativeVoxelPos(glam::UVec3::new(0, 0, 0).into()))
                 .is_empty(registry)
     }
 
