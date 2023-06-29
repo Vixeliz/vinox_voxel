@@ -1,5 +1,5 @@
 use crate::{mesh::chunk::RenderedVoxel, prelude::*};
-use ahash::{HashMap, HashMapExt};
+use ahash::HashMap;
 use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use strum::EnumString;
@@ -54,10 +54,19 @@ pub struct Block {
 #[derive(Deref, DerefMut, Default, Clone, Serialize, Deserialize)]
 pub struct BlockRegistry(pub HashMap<String, Block>);
 
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct UVRect {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
+}
+
 #[cfg(feature = "render")]
 #[derive(Clone)]
 pub struct AssetRegistry {
-    pub texture_indexes: HashMap<String, [usize; 6]>,
+    pub texture_uvs: HashMap<String, [UVRect; 6]>,
+    pub texture_size: mint::Point2<f32>,
     // pub texture_atlas: TextureAtlas,
 }
 
@@ -192,16 +201,13 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
         }
     }
 
-    fn to_texture_idx(
+    fn to_texture_uv(
         &self,
         _vox_registry: Option<&BlockRegistry>,
         asset_registry: Option<&AssetRegistry>,
-    ) -> Option<[usize; 6]> {
+    ) -> Option<[UVRect; 6]> {
         if let Some(asset_registry) = asset_registry {
-            return asset_registry
-                .texture_indexes
-                .get(&self.identifier)
-                .copied();
+            return asset_registry.texture_uvs.get(&self.identifier).copied();
         }
         None
     }

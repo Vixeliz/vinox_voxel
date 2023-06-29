@@ -1206,13 +1206,13 @@ impl<'a> Face<'a> {
         R: VoxRegistry<V> + Clone + Default,
     >(
         &self,
-        // texture_atlas: &TextureAtlas,
+        asset_registry: &AssetRegistry,
         matched_ind: usize,
         world_pos: mint::Vector3<i32>,
         chunk: &ChunkBoundary<V, R>,
     ) -> [[f32; 2]; 4] {
         if let Some(textures) = self.quad.data.textures {
-            let texture_index = textures[matched_ind];
+            let texture_uv = textures[matched_ind];
             let geo = chunk
                 .geometry_pal
                 .palette
@@ -1220,32 +1220,47 @@ impl<'a> Face<'a> {
                 .unwrap();
             let uv = geo.cubes.get(self.quad.cube).unwrap().uv;
             let mut face_tex = [[0.0; 2]; 4];
-            //     if let Some(texture) = texture_atlas.textures.get(texture_index) {
-            //         let min_x = texture.min.x;
-            //         let min_y = texture.min.y;
-            //         let face_index = match (&self.side.axis, &self.side.positive) {
-            //             (Axis::X, false) => 0,
-            //             (Axis::X, true) => 1,
-            //             (Axis::Y, false) => 2,
-            //             (Axis::Y, true) => 3,
-            //             (Axis::Z, false) => 4,
-            //             (Axis::Z, true) => 5,
-            //         };
-            //         let (min_x, min_y) = (
-            //             min_x + uv.get(face_index).unwrap().0 .0 as f32,
-            //             min_y + uv.get(face_index).unwrap().0 .1 as f32,
-            //         );
-            //         let (max_x, max_y) = (
-            //             min_x + uv.get(face_index).unwrap().1 .0 as f32,
-            //             min_y + uv.get(face_index).unwrap().1 .1 as f32,
-            //         );
-            //         let (min_x, min_y, max_x, max_y) = (
-            //             min_x / texture_atlas.size.x,
-            //             min_y / texture_atlas.size.y,
-            //             max_x / texture_atlas.size.x,
-            //             max_y / texture_atlas.size.y,
-            //         );
+            let min_x = texture_uv.x;
+            let min_y = texture_uv.y;
+            let face_index = match (&self.side.axis, &self.side.positive) {
+                (Axis::X, false) => 0,
+                (Axis::X, true) => 1,
+                (Axis::Y, false) => 2,
+                (Axis::Y, true) => 3,
+                (Axis::Z, false) => 4,
+                (Axis::Z, true) => 5,
+            };
+            let (min_x, min_y) = (
+                min_x + uv.get(face_index).unwrap().0 .0 as f32,
+                min_y + uv.get(face_index).unwrap().0 .1 as f32,
+            );
+            let (max_x, max_y) = (
+                min_x + uv.get(face_index).unwrap().1 .0 as f32,
+                min_y + uv.get(face_index).unwrap().1 .1 as f32,
+            );
+            let (min_x, min_y, max_x, max_y) = (
+                min_x / asset_registry.texture_size.x,
+                min_y / asset_registry.texture_size.y,
+                max_x / asset_registry.texture_size.x,
+                max_y / asset_registry.texture_size.y,
+            );
 
+            face_tex[2][0] = min_x;
+            face_tex[2][1] = min_y;
+            face_tex[3][0] = max_x;
+            face_tex[3][1] = min_y;
+            face_tex[0][0] = min_x;
+            face_tex[0][1] = max_y;
+            face_tex[1][0] = max_x;
+            face_tex[1][1] = max_y;
+            // let flip_num = if self.quad.data.tex_variance[face_index] {
+            //     let mut rng: StdRng = SeedableRng::seed_from_u64(world_pos.reflect_hash().unwrap());
+            //     rng.gen_range(0..6)
+            // } else {
+            //     0
+            // };
+            // match flip_num {
+            //     0 => {
             //         face_tex[2][0] = min_x;
             //         face_tex[2][1] = min_y;
             //         face_tex[3][0] = max_x;
@@ -1254,77 +1269,60 @@ impl<'a> Face<'a> {
             //         face_tex[0][1] = max_y;
             //         face_tex[1][0] = max_x;
             //         face_tex[1][1] = max_y;
-            //         // let flip_num = if self.quad.data.tex_variance[face_index] {
-            //         //     let mut rng: StdRng = SeedableRng::seed_from_u64(world_pos.reflect_hash().unwrap());
-            //         //     rng.gen_range(0..6)
-            //         // } else {
-            //         //     0
-            //         // };
-            //         // match flip_num {
-            //         //     0 => {
-            //         //         face_tex[2][0] = min_x;
-            //         //         face_tex[2][1] = min_y;
-            //         //         face_tex[3][0] = max_x;
-            //         //         face_tex[3][1] = min_y;
-            //         //         face_tex[0][0] = min_x;
-            //         //         face_tex[0][1] = max_y;
-            //         //         face_tex[1][0] = max_x;
-            //         //         face_tex[1][1] = max_y;
-            //         //     }
-            //         //     1 => {
-            //         //         face_tex[2][0] = max_x;
-            //         //         face_tex[2][1] = max_y;
-            //         //         face_tex[3][0] = min_x;
-            //         //         face_tex[3][1] = max_y;
-            //         //         face_tex[0][0] = max_x;
-            //         //         face_tex[0][1] = min_y;
-            //         //         face_tex[1][0] = min_x;
-            //         //         face_tex[1][1] = min_y;
-            //         //     }
-            //         //     2 => {
-            //         //         face_tex[2][0] = max_x;
-            //         //         face_tex[2][1] = min_y;
-            //         //         face_tex[3][0] = min_x;
-            //         //         face_tex[3][1] = min_y;
-            //         //         face_tex[0][0] = max_x;
-            //         //         face_tex[0][1] = max_y;
-            //         //         face_tex[1][0] = min_x;
-            //         //         face_tex[1][1] = max_y;
-            //         //     }
-            //         //     3 => {
-            //         //         face_tex[2][0] = min_x;
-            //         //         face_tex[2][1] = max_y;
-            //         //         face_tex[3][0] = max_x;
-            //         //         face_tex[3][1] = max_y;
-            //         //         face_tex[0][0] = min_x;
-            //         //         face_tex[0][1] = min_y;
-            //         //         face_tex[1][0] = max_x;
-            //         //         face_tex[1][1] = min_y;
-            //         //     }
-            //         //     4 => {
-            //         //         face_tex[2][0] = max_x;
-            //         //         face_tex[2][1] = max_y;
-            //         //         face_tex[3][0] = max_x;
-            //         //         face_tex[3][1] = min_y;
-            //         //         face_tex[0][0] = min_x;
-            //         //         face_tex[0][1] = max_y;
-            //         //         face_tex[1][0] = min_x;
-            //         //         face_tex[1][1] = min_y;
-            //         //     }
-            //         //     5 => {
-            //         //         face_tex[2][0] = min_x;
-            //         //         face_tex[2][1] = min_y;
-            //         //         face_tex[3][0] = min_x;
-            //         //         face_tex[3][1] = max_y;
-            //         //         face_tex[0][0] = max_x;
-            //         //         face_tex[0][1] = min_y;
-            //         //         face_tex[1][0] = max_x;
-            //         //         face_tex[1][1] = max_y;
-            //         //     }
-            //         //     _ => {}
-            //         // }
-            //         return face_tex;
             //     }
+            //     1 => {
+            //         face_tex[2][0] = max_x;
+            //         face_tex[2][1] = max_y;
+            //         face_tex[3][0] = min_x;
+            //         face_tex[3][1] = max_y;
+            //         face_tex[0][0] = max_x;
+            //         face_tex[0][1] = min_y;
+            //         face_tex[1][0] = min_x;
+            //         face_tex[1][1] = min_y;
+            //     }
+            //     2 => {
+            //         face_tex[2][0] = max_x;
+            //         face_tex[2][1] = min_y;
+            //         face_tex[3][0] = min_x;
+            //         face_tex[3][1] = min_y;
+            //         face_tex[0][0] = max_x;
+            //         face_tex[0][1] = max_y;
+            //         face_tex[1][0] = min_x;
+            //         face_tex[1][1] = max_y;
+            //     }
+            //     3 => {
+            //         face_tex[2][0] = min_x;
+            //         face_tex[2][1] = max_y;
+            //         face_tex[3][0] = max_x;
+            //         face_tex[3][1] = max_y;
+            //         face_tex[0][0] = min_x;
+            //         face_tex[0][1] = min_y;
+            //         face_tex[1][0] = max_x;
+            //         face_tex[1][1] = min_y;
+            //     }
+            //     4 => {
+            //         face_tex[2][0] = max_x;
+            //         face_tex[2][1] = max_y;
+            //         face_tex[3][0] = max_x;
+            //         face_tex[3][1] = min_y;
+            //         face_tex[0][0] = min_x;
+            //         face_tex[0][1] = max_y;
+            //         face_tex[1][0] = min_x;
+            //         face_tex[1][1] = min_y;
+            //     }
+            //     5 => {
+            //         face_tex[2][0] = min_x;
+            //         face_tex[2][1] = min_y;
+            //         face_tex[3][0] = min_x;
+            //         face_tex[3][1] = max_y;
+            //         face_tex[0][0] = max_x;
+            //         face_tex[0][1] = min_y;
+            //         face_tex[1][0] = max_x;
+            //         face_tex[1][1] = max_y;
+            //     }
+            //     _ => {}
+            // }
+            return face_tex;
         }
         [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
     }
@@ -1502,8 +1500,8 @@ pub fn full_mesh<
     V: Voxel<R> + Clone + Serialize + Eq + Default + RenderedVoxel<V, R>,
     R: VoxRegistry<V> + Clone + Default,
 >(
+    asset_registry: &AssetRegistry,
     raw_chunk: &ChunkBoundary<V, R>,
-    // texture_atlas: &TextureAtlas,
     chunk_pos: mint::Vector3<i32>,
 ) -> MeshedChunk {
     let mut buffer = QuadGroups::default();
@@ -1539,7 +1537,7 @@ pub fn full_mesh<
 
         uvs.extend_from_slice(
             &face.uvs(
-                // texture_atlas,
+                asset_registry,
                 matched_index,
                 VoxelPos::from(
                     mint::Vector3::<f32>::from(glam::Vec3::new(
@@ -1603,7 +1601,7 @@ pub fn full_mesh<
 
         uvs.extend_from_slice(
             &face.uvs(
-                // texture_atlas,
+                asset_registry,
                 matched_index,
                 VoxelPos::from(
                     mint::Vector3::<f32>::from(glam::Vec3::new(

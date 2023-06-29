@@ -40,11 +40,11 @@ pub trait RenderedVoxel<
 
     fn to_match_idx(&self, match_pal: Option<&mut BlockMatches>) -> usize;
     /// These should return the uvs for the whole texture of this face this doesn't include the uvs for geometry faces
-    fn to_texture_idx(
+    fn to_texture_uv(
         &self,
         vox_registry: Option<&R>,
         asset_registry: Option<&AssetRegistry>,
-    ) -> Option<[usize; 6]>;
+    ) -> Option<[UVRect; 6]>;
     /// Returns if a side of this voxel will block that faces neighbor
     fn blocking_sides(
         &self,
@@ -492,7 +492,7 @@ pub fn get_rend<
     let match_index = voxel.to_match_idx(Some(matching_blocks));
     let visibility = voxel.to_visibility(Some(vox_registry), None);
     let blocks_tuple = voxel.blocking_sides(Some(vox_registry), Some(geo_registry));
-    let textures = voxel.to_texture_idx(Some(vox_registry), Some(asset_registry));
+    let textures = voxel.to_texture_uv(Some(vox_registry), Some(asset_registry));
     RenderedBlockData {
         geo_index,
         // direction: voxel.direction,
@@ -514,13 +514,13 @@ pub fn get_rend<
 }
 
 #[cfg(feature = "render")]
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 /// This is the data that is actually used for rendering. We store it seperatly for performance
 pub struct RenderedBlockData {
     pub geo_index: Option<usize>,
     pub match_index: usize,
     pub visibility: VoxelVisibility,
-    pub textures: Option<[usize; 6]>,
+    pub textures: Option<[UVRect; 6]>,
     pub blocks: [bool; 6],
     pub blocks_self: Option<[bool; 6]>,
     pub light: Option<u8>,
