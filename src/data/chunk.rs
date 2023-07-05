@@ -288,6 +288,16 @@ pub struct RawChunk<
     voxels: Storage<V, R>,
 }
 
+impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default> Default
+    for RawChunk<V, R>
+{
+    fn default() -> Self {
+        Self {
+            voxels: Storage::new(ChunkShape::USIZE),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "bevy", derive(Component))]
 pub struct ChunkData<
