@@ -3,7 +3,7 @@ use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use strum::EnumString;
 
-#[derive(Deref, DerefMut, Default, Serialize, Deserialize)]
+#[derive(Deref, DerefMut, Default, Serialize, Deserialize, Clone)]
 pub struct GeometryRegistry(pub HashMap<String, Geometry>);
 
 pub fn trim_geo_identifier(identifier: String) -> String {
