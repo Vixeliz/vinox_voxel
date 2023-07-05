@@ -54,7 +54,7 @@ pub struct Block {
 #[derive(Deref, DerefMut, Default, Clone, Serialize, Deserialize)]
 pub struct BlockRegistry(pub HashMap<String, Block>);
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Deserialize, Serialize)]
 pub struct UVRect {
     pub x: f32,
     pub y: f32,
@@ -63,7 +63,7 @@ pub struct UVRect {
 }
 
 #[cfg(feature = "render")]
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct AssetRegistry {
     pub texture_uvs: HashMap<String, [UVRect; 6]>,
     pub texture_size: mint::Point2<f32>,
