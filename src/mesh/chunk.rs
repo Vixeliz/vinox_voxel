@@ -1,6 +1,5 @@
 use std::marker::PhantomData;
 
-// use bevy::render::view::visibility;
 use ndshape::{ConstShape, ConstShape3usize};
 use serde::Serialize;
 
@@ -81,12 +80,10 @@ impl<
 {
     pub fn new(
         center: ChunkData<V, R>,
-        neighbors: Box<[ChunkData<V, R>; 26]>,
+        neighbors: [ChunkData<V, R>; 26],
         voxel_registry: &R,
         geo_table: &GeometryRegistry,
         asset_registry: &AssetRegistry,
-        // loadable_assets: &LoadableAssets,
-        // texture_atlas: &TextureAtlas,
     ) -> Self {
         const MAX: usize = CHUNK_SIZE;
         const BOUND: usize = MAX + 1;

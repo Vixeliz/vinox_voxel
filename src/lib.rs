@@ -9,5 +9,5 @@ pub mod prelude {
     pub use crate::data::position::*;
     pub use crate::data::voxel::*;
     pub use crate::mesh::chunk::*;
-    pub use crate::mesh::mesh::*;
+    pub use crate::mesh::mesher::*;
 }

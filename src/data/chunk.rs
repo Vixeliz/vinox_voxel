@@ -20,20 +20,14 @@ pub struct Container {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Storage<
-    V: Voxel<R> + Clone + Serialize + Eq + Default,
-    R: VoxRegistry<V> + Clone + Default,
-> {
+pub enum Storage<V: Voxel<R>, R: VoxRegistry<V>> {
     Single(SingleStorage<V, R>),
     Multi(MultiStorage<V, R>),
 }
 
 /// Compressed storage for volumes with a single voxel type
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SingleStorage<
-    V: Voxel<R> + Clone + Serialize + Eq + Default,
-    R: VoxRegistry<V> + Clone + Default,
-> {
+pub struct SingleStorage<V: Voxel<R>, R: VoxRegistry<V>> {
     size: usize,
     voxel: V,
     phantom: PhantomData<R>,
@@ -42,10 +36,7 @@ pub struct SingleStorage<
 /// Palette compressed storage for volumes with multiple voxel types
 /// Based on https://voxel.wiki/wiki/palette-compression/
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct MultiStorage<
-    V: Voxel<R> + Clone + Serialize + Eq + Default,
-    R: VoxRegistry<V> + Clone + Default,
-> {
+pub struct MultiStorage<V: Voxel<R>, R: VoxRegistry<V>> {
     /// Size of chunk storage, in voxels
     size: usize,
     data: BitBuffer,
@@ -57,9 +48,7 @@ pub struct MultiStorage<
     indices_length: usize,
 }
 
-impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default>
-    MultiStorage<V, R>
-{
+impl<V: Voxel<R> + Clone + Eq + Default, R: VoxRegistry<V> + Clone + Default> MultiStorage<V, R> {
     fn new(size: usize, initial_voxel: V) -> Self {
         // Indices_length of 2 since this is only used for multiple voxel types
         let indices_length = 2;
@@ -100,9 +89,7 @@ impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone +
     }
 }
 
-impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default>
-    Storage<V, R>
-{
+impl<V: Voxel<R> + Clone + Eq + Default, R: VoxRegistry<V> + Clone + Default> Storage<V, R> {
     pub fn new(size: usize) -> Self {
         Self::Single(SingleStorage {
             size,
@@ -246,7 +233,7 @@ impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone +
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct PaletteEntry<V: Voxel<R> + Clone + Serialize, R: VoxRegistry<V> + Clone + Default> {
+struct PaletteEntry<V: Voxel<R>, R: VoxRegistry<V>> {
     voxel_type: V,
     ref_count: usize,
     phantom: PhantomData<R>,
@@ -281,14 +268,11 @@ impl BitBuffer {
 
 #[derive(Serialize, Deserialize, Clone)]
 #[cfg_attr(feature = "bevy", derive(Component))]
-pub struct RawChunk<
-    V: Voxel<R> + Clone + Serialize + Eq + Default,
-    R: VoxRegistry<V> + Clone + Default,
-> {
+pub struct RawChunk<V: Voxel<R>, R: VoxRegistry<V>> {
     voxels: Storage<V, R>,
 }
 
-impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default> Default
+impl<V: Voxel<R> + Clone + Eq + Default, R: VoxRegistry<V> + Clone + Default> Default
     for RawChunk<V, R>
 {
     fn default() -> Self {
@@ -300,16 +284,13 @@ impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone +
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "bevy", derive(Component))]
-pub struct ChunkData<
-    V: Voxel<R> + Clone + Serialize + Eq + Default,
-    R: VoxRegistry<V> + Clone + Default,
-> {
+pub struct ChunkData<V: Voxel<R>, R: VoxRegistry<V>> {
     voxels: Storage<V, R>,
     change_count: u16,
     dirty: bool,
 }
 
-impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default> Default
+impl<V: Voxel<R> + Clone + Eq + Default, R: VoxRegistry<V> + Clone + Default> Default
     for ChunkData<V, R>
 {
     fn default() -> Self {
@@ -322,9 +303,7 @@ impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone +
 }
 
 #[allow(dead_code)]
-impl<V: Voxel<R> + Clone + Serialize + Eq + Default, R: VoxRegistry<V> + Clone + Default>
-    ChunkData<V, R>
-{
+impl<V: Voxel<R> + Clone + Eq + Default, R: VoxRegistry<V> + Clone + Default> ChunkData<V, R> {
     pub fn get(&self, pos: RelativeVoxelPos) -> V {
         self.voxels.get(Self::linearize(pos))
     }

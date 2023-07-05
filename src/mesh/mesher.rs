@@ -1,13 +1,6 @@
 use crate::prelude::*;
-use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
 use serde::Serialize;
 use std::ops::Deref;
-
-// use bevy::{
-//     prelude::*,
-//     render::{mesh::Indices, render_resource::PrimitiveTopology},
-// };
 
 pub const EMPTY: VoxelVisibility = VoxelVisibility::Empty;
 pub const OPAQUE: VoxelVisibility = VoxelVisibility::Opaque;
@@ -1208,7 +1201,7 @@ impl<'a> Face<'a> {
         &self,
         asset_registry: &AssetRegistry,
         matched_ind: usize,
-        world_pos: mint::Vector3<i32>,
+        _: mint::Vector3<i32>,
         chunk: &ChunkBoundary<V, R>,
     ) -> [[f32; 2]; 4] {
         if let Some(textures) = self.quad.data.textures {
@@ -1564,19 +1557,16 @@ pub fn full_mesh<
         ]]);
     }
 
-    let mut mesh = VoxMesh::default();
-    mesh.vertices = positions.clone();
-    mesh.normals = normals.clone();
-    mesh.colors = Some(final_color.clone());
-    mesh.indices = indices.clone();
-    mesh.uvs = Some(uvs.clone());
-    // let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    // mesh.set_indices(Some(Indices::U32(indices)));
-    // mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions.clone());
-    // mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-    // mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-    // mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, final_color);
+    let mesh = VoxMesh {
+        vertices: positions.clone(),
+        normals: normals.clone(),
+        colors: Some(final_color.clone()),
+        indices: indices.clone(),
+        uvs: Some(uvs.clone()),
+    };
+
     buffer.clear();
+
     //Transparent Mesh
     generate_mesh(raw_chunk, false, &mut buffer);
     let mut ao = Vec::new();
@@ -1616,17 +1606,14 @@ pub fn full_mesh<
         );
     }
 
-    let mut transparent_mesh = VoxMesh::default();
-    transparent_mesh.vertices = positions.clone();
-    transparent_mesh.normals = normals.clone();
-    transparent_mesh.colors = Some(final_color.clone());
-    transparent_mesh.indices = indices.clone();
-    transparent_mesh.uvs = Some(uvs.clone());
-    // let mut transparent_mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    // transparent_mesh.set_indices(Some(Indices::U32(indices)));
-    // transparent_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions.clone());
-    // transparent_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-    // transparent_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    let transparent_mesh = VoxMesh {
+        vertices: positions.clone(),
+        normals: normals.clone(),
+        colors: Some(final_color.clone()),
+        indices: indices.clone(),
+        uvs: Some(uvs.clone()),
+    };
+
     MeshedChunk {
         chunk_mesh: mesh,
         transparent_mesh,

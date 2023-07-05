@@ -163,7 +163,7 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
                                 .position(|r| r.clone() == geo_data_new)
                                 .unwrap()
                         } else {
-                            geo_pal.palette.push(geo_data_new.clone());
+                            geo_pal.palette.push(geo_data_new);
                             geo_pal.palette.len() - 1
                             // geo_pal
                             //     .palette

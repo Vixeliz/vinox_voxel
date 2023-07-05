@@ -1,11 +1,9 @@
-use ahash::{HashMap, HashMapExt};
+use ahash::HashMap;
 use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use strum::EnumString;
 
-// use crate::prelude::*;
-
-#[derive(Deref, DerefMut, Default)]
+#[derive(Deref, DerefMut, Default, Serialize, Deserialize)]
 pub struct GeometryRegistry(pub HashMap<String, Geometry>);
 
 pub fn trim_geo_identifier(identifier: String) -> String {
