@@ -256,7 +256,7 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
 #[cfg(feature = "block")]
 impl Voxel<BlockRegistry> for BlockData {
     fn is_empty(&self, registry: Option<&BlockRegistry>) -> bool {
-        !registry.is_some_and(|z| {
+        registry.is_some_and(|z| {
             z.get(&self.identifier)
                 .is_some_and(|x| x.visibility.is_some_and(|y| y != VoxelVisibility::Empty))
         })
