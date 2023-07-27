@@ -258,10 +258,15 @@ impl RenderedVoxel<Self, BlockRegistry> for BlockData {
 #[cfg(feature = "block")]
 impl Voxel<BlockRegistry> for BlockData {
     fn is_empty(&self, registry: Option<&BlockRegistry>) -> bool {
-        registry.is_some_and(|z| {
-            z.get(&self.identifier)
-                .is_some_and(|x| x.visibility.is_some_and(|y| y != VoxelVisibility::Empty))
-        })
+        if let Some(registry) = registry {
+            if let Some(voxel) = registry.get(&self.identifier) {
+                voxel.visibility.unwrap_or_default() == VoxelVisibility::Empty
+            } else {
+                true
+            }
+        } else {
+            true
+        }
     }
 
     fn is_opaque(&self, registry: Option<&BlockRegistry>) -> bool {
