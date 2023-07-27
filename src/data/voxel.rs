@@ -110,9 +110,13 @@ impl AssetRegistry {
 
 impl VoxRegistry<BlockData> for BlockRegistry {
     fn is_empty(&self, vox: BlockData) -> bool {
-        self.0
-            .get(&vox.identifier)
-            .is_some_and(|x| x.visibility.is_some_and(|y| y == VoxelVisibility::Empty))
+        if let Some(voxel) = self.0.get(&vox.identifier) {
+            voxel
+                .visibility
+                .is_some_and(|y| y == VoxelVisibility::Empty)
+        } else {
+            true
+        }
     }
 }
 
